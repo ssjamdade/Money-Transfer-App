@@ -1,5 +1,4 @@
-import React from 'react'
-import { use } from 'react'
+
 import { useNavigate } from 'react-router-dom'
 
 const AppBar = ({user}) => {
@@ -10,7 +9,7 @@ const AppBar = ({user}) => {
         <nav className='flex justify-between items-center p-4 border-1 border-gray-300'>
             <div className='flex items-center gap-4'>
                 
-            <span className='font-bold'>Payment App</span>
+            <span className='font-bold'>Payment Page</span>
             <div onClick={()=> navigate("/")} className='underline cursor-pointer'>Home</div>
             </div>
             <div className='flex items-center gap-2'>

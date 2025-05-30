@@ -6,12 +6,13 @@ import axios from 'axios'
 
 const Dashboard = () => {
   const [data, setData] = useState({})
-
+  
+  const apiUrl = import.meta.env.VITE_API_URL
   useEffect(() => {
 
     const fetchData = async () => {
 
-      const res = await axios.get("http://localhost:3000/api/v1/account/balance", {
+      const res = await axios.get(`${apiUrl}/api/v1/account/balance`, {
         headers: {
           authorization: `Bearer ${localStorage.getItem("token")}`
         }

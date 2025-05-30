@@ -7,17 +7,19 @@ import SubHeading from '../components/SubHeading'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
+
 const Signup = () => {
   
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loader, setLoader] = useState(false)
   
   const navigate = useNavigate()
   
-  const ApiUrl = "http://localhost:3000/api/v1/user/signup"
-  
+  const apiUrl = import.meta.env.VITE_API_URL
+
   useEffect(() => {
     document.body.style.backgroundColor = "#cad5e2"
 
@@ -27,8 +29,9 @@ const Signup = () => {
   }, [])
 
   const sendData = async (e) => {
+    setLoader(true)
     try {
-      const response = await axios.post(ApiUrl, {
+      const response = await axios.post(`${apiUrl}/api/v1/user/signup`, {
         firstName,
         lastName,
         username,
@@ -51,6 +54,8 @@ const Signup = () => {
       }
 
 
+    } finally {
+      setLoader(false)
     }
   }
   return (
@@ -66,7 +71,11 @@ const Signup = () => {
           <InputBox onChange={(e) => setPassword(e.target.value)} placeholder="123456" label={"Password"} />
 
           <div className="pt-4">
-            <Button onClick={sendData} label={"Sign Up"} />
+            {
+              loader
+                ? <div className="text-blue-600 font-semibold">Signing up...</div>
+                : <Button onClick={sendData} label={"Sign Up"} />
+            }
           </div>
           <BottomWarning label={"Already have an account?"} buttonText={"Sign In"} to={"/signin"} />
         </div>

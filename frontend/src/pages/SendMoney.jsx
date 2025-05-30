@@ -7,13 +7,15 @@ const SendMoney = () => {
     const id = searchParams.get("id")
     const name = searchParams.get("name")
     const [amount, setAmount] = useState(0)
+    const [loading, setLoading] = useState(false)
 
     const navigate = useNavigate()
+    const apiUrl = import.meta.env.VITE_API_URL
 
     const sendTransfer = async () => {
-
+        setLoading(true)
         try {
-            const res = await axios.post("http://localhost:3000/api/v1/account/transfer", {
+            const res = await axios.post(`${apiUrl}/api/v1/account/transfer`, {
                 to: id,
                 amount: amount
             }, {
@@ -24,18 +26,22 @@ const SendMoney = () => {
             alert(res.data.message)
             navigate("/dashboard")
         }
-        catch (err){
+        catch (err) {
             if (err.response.status === 400) {
                 alert("Bad request")
             } else if (err.response.status === 401) {
                 alert("Invalid credentials")
-            } else if(err.response.status === 403) {
+            } else if (err.response.status === 403) {
                 alert("Insufficient balance")
-            }else{
+            } else {
                 alert("Something went wrong")
             }
             navigate("/dashboard")
         }
+        finally {
+            setLoading(false)
+        }
+
     }
 
     return <div className="flex justify-center h-screen bg-gray-100">
@@ -69,8 +75,15 @@ const SendMoney = () => {
                                 onChange={(e) => setAmount(e.target.value)}
                             />
                         </div>
-                        <button onClick={sendTransfer} className="justify-center rounded-md text-sm font-medium ring-offset-background transition-colors h-10 px-4 py-2 w-full bg-green-500 text-white">
-                            Initiate Transfer
+                        <button
+                            onClick={sendTransfer}
+                            disabled={loading}
+                            className={`justify-center rounded-md text-sm font-medium ring-offset-background transition-colors h-10 px-4 py-2 w-full ${loading
+                                    ? "bg-green-300 cursor-not-allowed"
+                                    : "bg-green-500 hover:bg-green-600"
+                                } text-white`}
+                        >
+                            {loading ? "Processing..." : "Initiate Transfer"}
                         </button>
                     </div>
                 </div>

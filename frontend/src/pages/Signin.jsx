@@ -7,15 +7,17 @@ import BottomWarning from '../components/BottomWarning'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
+
 const Signin = () => {
 
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
-  
+  const [loader, setLoader] = useState(false)
+
   const navigate = useNavigate()
-  
-  const ApiUrl = "http://localhost:3000/api/v1/user/signin"
-  
+
+  const apiUrl = import.meta.env.VITE_API_URL
+
   useEffect(() => {
     document.body.style.backgroundColor = "#cad5e2"
 
@@ -25,8 +27,9 @@ const Signin = () => {
   }, [])
 
   const sendSignin = async (e) => {
+    setLoader(true)
     try {
-      const response = await axios.post(ApiUrl, {
+      const response = await axios.post(`${apiUrl}/api/v1/user/signin`, {
         username,
         password
       })
@@ -45,9 +48,12 @@ const Signin = () => {
         alert("Something went wrong")
       }
     }
+    finally {
+      setLoader(false)
+    }
   }
 
-  
+
 
   return (
 
@@ -59,7 +65,11 @@ const Signin = () => {
           <InputBox onChange={(e) => setUsername(e.target.value)} placeholder="harkirat@gmail.com" label={"Email"} />
           <InputBox onChange={(e) => setPassword(e.target.value)} placeholder="123456" label={"Password"} />
           <div className="pt-4">
-            <Button onClick={sendSignin} label={"Sign In"} />
+            <Button
+              onClick={sendSignin}
+              label={loader ? 'Signing in...' : 'Sign In'}
+              disabled={loader}
+            />
           </div>
           <BottomWarning label={"Don't have an account?"} buttonText={"Sign Up"} to={"/signup"} />
         </div>
