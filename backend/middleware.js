@@ -1,5 +1,8 @@
 const jwt = require('jsonwebtoken')
-const { JWT_SECRET } = require('./config')
+require('dotenv').config()
+
+const jwt_secret = process.env.JWT_SECRET
+
 const authMiddleware = (req, res, next) => {
     
      const authHeader = req.headers.authorization;
@@ -10,7 +13,7 @@ const authMiddleware = (req, res, next) => {
 
     const token = authHeader.split(' ')[1]
 
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    jwt.verify(token, jwt_secret, (err, decoded) => {
         if (err) {
             return res.status(403).json({ message: "Unauthorized" })
         }

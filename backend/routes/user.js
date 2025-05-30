@@ -3,12 +3,14 @@ const zod = require('zod')
 const { User } = require('../db')
 const { Account } = require('../db')
 const jwt = require('jsonwebtoken')
-const { JWT_SECRET } = require('../config')
 const authMiddleware = require('../middleware')
 const { hashPassword } = require('../password')
 const { verifyPassword } = require('../password')
+require('dotenv').config()
 
 const router = Router()
+
+const jwt_secret = process.env.JWT_SECRET
 
 const userSignup = zod.object({
     username: zod.string().email().min(3).trim().toLowerCase(),
@@ -42,7 +44,7 @@ router.post('/signup', async (req, res) => {
             lastName: req.body.lastName
         })
 
-        const token = jwt.sign({ id: user._id }, JWT_SECRET)
+        const token = jwt.sign({ id: user._id }, jwt_secret)
 
         // Create an account for the user with a random balance
         await Account.create({
@@ -89,7 +91,7 @@ router.post('/signin', async (req, res) => {
 
     res.json({
         message: "User signed in successfully",
-        token: jwt.sign({ id: existUser._id }, JWT_SECRET),
+        token: jwt.sign({ id: existUser._id }, jwt_secret),
         username: existUser.username
     })
 })
