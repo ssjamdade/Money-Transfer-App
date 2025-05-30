@@ -8,9 +8,25 @@ const Users = () => {
 
   const [users, setUsers] = useState([])
   const [filter, setFilter] = useState("")
+  const loginUsername = localStorage.getItem("username")
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/v1/user/bulk?filter=" + filter).then(res => setUsers(res.data.users!=undefined ? res.data.users : []))
+
+    async function fetchUsers() {
+      try {
+        const res = await axios.get(`http://localhost:3000/api/v1/user/bulk?filter=${filter}`)
+        const filteredUsers = res.data.users
+          ? res.data.users.filter(user => user.username !== loginUsername)
+          : []
+        setUsers(filteredUsers)
+      } catch (error) {
+        console.error("Error fetching users:", error)
+        setUsers([]) // Optional: clear on error
+      }
+    }
+
+    fetchUsers();
+    
   }, [filter])
 
   return (

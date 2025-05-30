@@ -5,6 +5,8 @@ const { Account } = require('../db')
 const jwt = require('jsonwebtoken')
 const { JWT_SECRET } = require('../config')
 const authMiddleware = require('../middleware')
+const { hashPassword } = require('../password')
+const { verifyPassword } = require('../password')
 
 const router = Router()
 
@@ -17,29 +19,46 @@ const userSignup = zod.object({
 
 
 router.post('/signup', async (req, res) => {
+
+    //validate the request body
     const { success } = userSignup.safeParse(req.body)
     if (!success) {
         return res.status(401).json({ message: "Invalid data" })
     }
 
+    //check if the user already exists
     const existUser = await User.findOne({ username: req.body.username })
     if (existUser) {
         return res.status(409).json({ message: "Email already exists" })
     }
 
-    const user = await User.create(req.body)
-    const token = jwt.sign({ id: user._id }, JWT_SECRET)
+    try {
+        const hashedPassword = await hashPassword(req.body.password)
 
-    await Account.create({
-        userId: user._id,
-        balance: Math.floor(Math.random() * 10000) + 1
-    })
+        const user = await User.create({
+            username: req.body.username,
+            password: hashedPassword,
+            firstName: req.body.firstName,
+            lastName: req.body.lastName
+        })
 
-    res.json({
-        message: "User created successfully",
-        token: token,
-        username: user.username
-    })
+        const token = jwt.sign({ id: user._id }, JWT_SECRET)
+
+        // Create an account for the user with a random balance
+        await Account.create({
+            userId: user._id,
+            balance: Math.floor(Math.random() * 10000) + 1
+        })
+
+        res.status(201).json({
+            message: "User created successfully",
+            token: token,
+            username: user.username
+        })
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error registering user' });
+    }
 })
 
 const userSignin = zod.object({
@@ -55,13 +74,19 @@ router.post('/signin', async (req, res) => {
     }
 
     const existUser = await User.findOne({
-        username: req.body.username,
-        password: req.body.password
+        username: req.body.username
     })
 
     if (!existUser) {
         return res.status(401).json({ message: "Invalid credentials" })
     }
+
+    const valid = await verifyPassword(existUser.password, req.body.password);
+
+    if (!valid) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
     res.json({
         message: "User signed in successfully",
         token: jwt.sign({ id: existUser._id }, JWT_SECRET),
@@ -76,6 +101,7 @@ const userUpdate = zod.object({
     lastName: zod.string().optional(),
 })
 
+// Didn't implement this route in the frontend, but it can be used to update user information.
 router.put('/', authMiddleware, async (req, res) => {
     const { success } = userUpdate.safeParse(req.body)
     if (!success) {
@@ -85,7 +111,7 @@ router.put('/', authMiddleware, async (req, res) => {
     console.log(req.userId.id)
 
     try {
-        await User.updateOne( {_id:req.userId.id}, req.body); 
+        await User.updateOne({ _id: req.userId.id }, req.body);
         res.json({ message: "User updated successfully" })
     }
     catch (error) {
