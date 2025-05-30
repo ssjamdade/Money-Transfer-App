@@ -44,7 +44,7 @@ router.post('/signup', async (req, res) => {
             lastName: req.body.lastName
         })
 
-        const token = jwt.sign({ id: user._id }, jwt_secret)
+        const token = jwt.sign({ id: user._id }, jwt_secret,  { expiresIn: '1h' })
 
         // Create an account for the user with a random balance
         await Account.create({
@@ -91,7 +91,7 @@ router.post('/signin', async (req, res) => {
 
     res.json({
         message: "User signed in successfully",
-        token: jwt.sign({ id: existUser._id }, jwt_secret),
+        token: jwt.sign({ id: existUser._id }, jwt_secret,  { expiresIn: '1h' }),
         username: existUser.username
     })
 })
